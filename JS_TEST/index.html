@@ -1,0 +1,106 @@
+<html>
+
+
+<body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script>
+		function getUrlVars() {
+			var vars = {};
+			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,    
+			function(m,key,value) {
+			  vars[key] = value;
+			});
+			return vars;
+		  }
+		function loadJSON() {
+			$.getJSON('http://127.0.0.1:8080/get/1', function(data) {
+				var tabledata = "";
+				if (data.Finish == true) {
+					if (data.Winner == getUrlVars()["color"]) {
+						tabledata = "<tr><td>YOU WIN !</td></tr>"
+						document.getElementById('jeux').innerHTML = tabledata;
+					} else if (data.Winner != getUrlVars()["color"] && data.Winner != 3) {
+						tabledata = "<tr><td>OH ! LOOSER !</td></tr>"
+						document.getElementById('jeux').innerHTML = tabledata;
+					} else {
+						tabledata = "<tr><td>EGALITY ?!</td></tr>"
+						document.getElementById('jeux').innerHTML = tabledata;
+					}
+				} else {
+					if (data.Turn == getUrlVars()["color"]) {
+						for(var i = 0; i < data.Game.length; i++) {
+							tabledata += "<tr>"
+							for(var j = 0; j < data.Game[i].length; j++) {
+								
+								if (data.Game[i][j] == 1) {
+									tabledata += "<td class='blanc'>"
+								} else if (data.Game[i][j] == 2) {
+									tabledata += "<td class='noir'>"
+								} else {
+									tabledata += "<td class='gris' onclick='myFunction(\"" + i + "/" + j + "\")'>"
+								}
+								tabledata += "</td>"
+							}
+							tabledata += "</tr>"
+						}
+						document.getElementById('jeux').innerHTML = tabledata;
+					} else {
+						//wait
+						tabledata = "<tr><td>not your turn</td></tr>"
+						document.getElementById('jeux').innerHTML = tabledata;
+						loadJSON();
+					}
+				}			
+			});
+		}  
+		
+		
+		function myFunction(coord) {
+			$.get(
+				"http://127.0.0.1:8080/put/" + getUrlVars()["color"] + "/" + coord,
+				null,
+				function(data) {
+				   loadJSON();
+				}
+			);
+			httpGet();
+		}
+		
+		
+		loadJSON();
+		
+	
+	</script>
+	<style>
+		td {
+			height: 50px;
+			width: 50px;
+		}
+		
+		.blanc {
+			background-color: white;
+		}
+		
+		.noir {
+			background-color: black;
+		}
+		
+		.gris {
+			background-color: grey;
+		}
+	</style>
+	
+	
+	<div>
+		
+		<table id="jeux">
+			<tr>
+				<td>X</td>
+				<td>O</td>
+			</tr>
+		
+		</table>
+		
+	</div>
+</body>
+</html>
