@@ -60,7 +60,7 @@ let Retourner ligne colonne sensL sensC color =
                 c_tmp <- c_tmp - sensC
                 l_tmp <- l_tmp - sensL
 
-let isFinish:bool =
+let isFinish x :bool =
     let mutable fin = true
     for i in 0 .. table.Length - 1 do
         for j in 0 .. table.[i].Length - 1 do
@@ -72,7 +72,7 @@ let isFinish:bool =
 
     fin
 
-let getWinner = 
+let getWinner x = 
     let mutable j1 = 0
     let mutable j2 = 0
     for i in 0 .. table.Length - 1 do
@@ -85,7 +85,7 @@ let getWinner =
         winner <- 1
     elif j2 > j1 then
         winner <- 2
-    elif j2 = j1 && isFinish = true then
+    elif j2 = j1 && (isFinish 1) = true then
         winner <- 3
     else
         winner <- 0
@@ -95,9 +95,7 @@ let getWinner =
 let GameIt color ligne colonne = 
     request (fun tg -> 
 
-        if isFinish = true then
-            getWinner
-        elif colonne >= 0 && colonne < 8 && ligne >= 0 && ligne < 8 && table.[ligne].[colonne] = 0 then
+        if colonne >= 0 && colonne < 8 && ligne >= 0 && ligne < 8 && table.[ligne].[colonne] = 0 && turn = color then
             table.[ligne].SetValue(color, colonne);
             Retourner ligne colonne 1   0 color
             Retourner ligne colonne -1  0 color
@@ -112,6 +110,9 @@ let GameIt color ligne colonne =
                 turn <- 2
             else
                 turn <- 1
+
+            if (isFinish 1) = true then
+                getWinner 1
             
         OK(sprintf "%s" (getGame table turn finish winner))
     )
@@ -126,7 +127,7 @@ let browse =
 let webPart = 
     choose [
         path "/" >=> (OK "Home")
-        path "/get" >=> (OK (sprintf "%s" (getGame table turn finish winner)))
+        pathScan "/get/%d" (fun (color) -> OK (sprintf "%s" (getGame table turn finish winner))) 
         pathScan "/put/%d/%d/%d"  (fun (color, ligne, col) -> GameIt color ligne col)
     ]
 startWebServer defaultConfig webPart
